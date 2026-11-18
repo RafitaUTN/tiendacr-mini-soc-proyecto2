@@ -1,10 +1,9 @@
 # Implementacion completa del Mini SOC TiendaCR
 
 > Estado medido el 18-11-2026: las tres VMs activas; Manager, Indexer,
-> Dashboard, Filebeat y agente 001 activos. Suricata y Wazuh detectaron las
-> pruebas de escaneo, SSH, SQLi, traversal y FIM. Active Response bloqueó el
-> origen durante 180 s y retiró la regla al expirar. La evidencia y el runbook
-> actualizado están en `../evidence/2026-11-18/` y `comandos-finalizacion.md`.
+> Dashboard, Filebeat y agente 001 activos. El WAF bloqueó los payloads SQLi y
+> traversal probados incluso tras expirar Active Response. Wazuh detectó SSH,
+> ataques web y FIM desde Kali. Evidencia en `../evidence/2026-11-18/`.
 
 ## 1. Objetivo
 
@@ -58,11 +57,13 @@ de Vagrant. No se usa bridging y no se expone Juice Shop en la interfaz NAT.
   privada, utilidades y UFW.
 - [base.sh atacante](../provisioning/attacker/base.sh): Nmap, Curl, jq y SSH.
 - [base.sh objetivo](../provisioning/target/base.sh): Docker, Juice Shop,
-  Suricata y agente Wazuh.
+  WAF, Suricata y agente Wazuh.
 - [base.sh SIEM](../provisioning/siem/base.sh): dependencias e instalacion
   oficial de Wazuh.
 - [docker-compose de Juice Shop](../docker/juice-shop/docker-compose.yml):
-  contenedor restringido a `10.10.10.10:3000`.
+  upstream de Juice Shop ligado a `127.0.0.1:3001` detrás del WAF.
+- [WAF de laboratorio](../provisioning/target/tiendacr-waf.py): proxy en la IP
+  privada del target; bloquea patrones probados de SQLi, traversal y XSS.
 - [reglas Wazuh](../wazuh/manager/local_rules.xml): SQLi, traversal y umbral
   de cinco eventos SSH en 120 segundos.
 - [reglas Suricata](../suricata/rules/tiendacr.rules): conexión de Juice Shop,
@@ -70,8 +71,11 @@ de Vagrant. No se usa bridging y no se expone Juice Shop en la interfaz NAT.
 
 ### Seguridad aplicada
 
-- Juice Shop usa `read_only` y `no-new-privileges`.
-- El puerto 3000 se publica solamente en `10.10.10.10`.
+- Juice Shop corre como usuario no privilegiado `65532`, con
+  `no-new-privileges` y volumen nombrado para datos de laboratorio. La imagen
+  reescribe archivos de arranque; el rootfs no es read-only.
+- El puerto 3000 publica el WAF solo en `10.10.10.10`; el puerto upstream 3001
+  escucha únicamente en loopback.
 - La interfaz de captura de Suricata se determina por la ruta de
   `10.10.10.0/24`; no se asume que siempre se llame `eth0`.
 - La unidad de Suricata usa `Type=simple` para evitar el timeout de la unidad
@@ -94,6 +98,7 @@ de Vagrant. No se usa bridging y no se expone Juice Shop en la interfaz NAT.
 - Docker Engine.
 - Docker Compose.
 - OWASP Juice Shop `bkimminich/juice-shop:v17.2.0`.
+- WAF HTTP local `tiendacr-waf.service`.
 - Suricata 6.0.4.
 - OpenSSH.
 - Wazuh Agent 4.14.10.
@@ -164,16 +169,13 @@ en [comandos-finalizacion.md](comandos-finalizacion.md).
 ## 7. Estado de validación
 
 La validación funcional actual y los límites se detallan en
-[`estado-actual.md`](estado-actual.md). El agente 001 aparece `Active`; Manager,
-Indexer, Dashboard y Filebeat están activos. Suricata detectó reconocimiento,
-SQLi y traversal; Wazuh correlacionó el umbral SSH y la modificación FIM. La
-respuesta automática limitó el bloqueo al origen→servicio, lo retiró al vencer
-el timeout y el servicio recuperó HTTP 200.
-
-El módulo de vulnerabilidades está iniciado, pero el inventario producido por
-el feed debe revisarse en el Dashboard; no se presenta una lista de CVE sin
-verificar. El código de Juice Shop sigue intencionalmente vulnerable y su
-riesgo residual se documenta como alto en el segmento del laboratorio.
+[`VALIDACION_FINAL.md`](VALIDACION_FINAL.md). El agente 001 aparece `Active`;
+Manager, Indexer, Dashboard y Filebeat están activos. Suricata detectó
+reconocimiento, SQLi y traversal; Wazuh correlacionó SSH, FIM y vulnerabilidades
+del objetivo. El WAF rechazó de forma persistente los patrones de prueba; el
+bloqueo automático temporal también expiró correctamente. Juice Shop conserva
+su vulnerabilidad intencional y el WAF por firmas no sustituye parchear el
+código ni garantiza bloquear variantes.
 
 ## 8. Procedimiento operativo
 

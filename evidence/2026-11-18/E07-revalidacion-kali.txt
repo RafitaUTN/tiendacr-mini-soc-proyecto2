@@ -22,8 +22,11 @@ Target / SIEM:
 - Filebeat test output: TLS verificado y conexión a Indexer 127.0.0.1:9200.
 - FIM: modificación del marcador benigno project-check.txt en
   /opt/tiendacr/fim-test; Wazuh regla 550 observada en alerts.json.
-- Indexer: 2578 documentos en vulnerabilidades del SIEM; no apareció índice
-  wazuh-states-vulnerabilities del agente objetivo.
+- Indexer: consulta filtrada por agent.id=001 devolvió 629 paquetes y 2578
+  registros de vulnerabilidades del objetivo ubuntu-servidor-objetivo. Una
+  muestra: linux-image-5.15.0-203-generic, CVE-2026-99282, under_evaluation=true,
+  score -1.0/sin CVSS asignado por Wazuh. No usar esa muestra como severidad
+  confirmada; priorizar los resultados desde Dashboard.
 
 La prueba FIM fue una simulación administrativa local del cambio de archivo,
 no una intrusión remota desde Kali. No incluye claves, credenciales ni logs

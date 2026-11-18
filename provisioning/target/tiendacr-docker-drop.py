@@ -17,11 +17,7 @@ LAB_NETWORK = ipaddress.ip_network("10.10.10.0/24")
 SIEM_IP = ipaddress.ip_address("10.10.10.20")
 TARGET_IP = ipaddress.ip_address("10.10.10.10")
 GATEWAY_IP = ipaddress.ip_address("10.10.10.1")
-CONTAINER_NAME = "tiendacr-juice-shop-nuevo"
-DOCKER_NETWORK = "juice-shop_default"
-DOCKER = "/usr/bin/docker"
-CONTAINER_NETWORK = ipaddress.ip_network("172.18.0.0/16")
-CONTAINER_PORT = "3000"
+WEB_PORT = "3000"
 
 RULE_ID = "100100"
 SURICATA_SID = "1000003"
@@ -108,38 +104,18 @@ def send_check_keys(source_ip):
     return True
 
 
-def get_container_ip():
+def get_lab_interface():
     result = subprocess.run(
-        [
-            DOCKER,
-            "inspect",
-            "--format",
-            "{{json .}}",
-            CONTAINER_NAME
-        ],
+        ["/usr/sbin/ip", "route", "show", "10.10.10.0/24"],
         capture_output=True,
         text=True,
-        timeout=10,
-        check=True
+        timeout=5,
+        check=True,
     )
-
-    container = json.loads(result.stdout)
-
-    if not container.get("State", {}).get("Running"):
-        raise RuntimeError("El contenedor Juice Shop no esta activo")
-
-    networks = container.get("NetworkSettings", {}).get("Networks", {})
-    network = networks.get(DOCKER_NETWORK)
-
-    if not network:
-        raise RuntimeError("No se encontro la red Docker esperada")
-
-    address = ipaddress.ip_address(network.get("IPAddress", ""))
-
-    if address.version != 4 or address not in CONTAINER_NETWORK:
-        raise RuntimeError("IP del contenedor fuera de la red autorizada")
-
-    return str(address)
+    fields = result.stdout.split()
+    if "dev" not in fields:
+        raise RuntimeError("No se encontro la interfaz de la red de laboratorio")
+    return fields[fields.index("dev") + 1]
 
 
 def state_file(source_ip):
@@ -151,22 +127,21 @@ def iptables_action(action, source_ip):
     state_path = state_file(source_ip)
 
     if action == "-I":
-        container_ip = get_container_ip()
+        lab_interface = get_lab_interface()
 
         rule_args = [
+            "-i", lab_interface,
             "-s", source_ip,
-            "-d", container_ip,
+            "-d", str(TARGET_IP),
             "-p", "tcp",
-            "--dport", CONTAINER_PORT,
-            "-m", "conntrack",
-            "--ctstate", "NEW",
+            "--dport", WEB_PORT,
             "-m", "comment",
             "--comment", COMMENT,
             "-j", "DROP"
         ]
 
         check = subprocess.run(
-            [IPTABLES, "-w", "5", "-C", "DOCKER-USER"] + rule_args,
+            [IPTABLES, "-w", "5", "-C", "INPUT"] + rule_args,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL
         )
@@ -183,7 +158,8 @@ def iptables_action(action, source_ip):
 
         state = {
             "source_ip": source_ip,
-            "container_ip": container_ip,
+            "target_ip": str(TARGET_IP),
+            "interface": lab_interface,
             "comment": COMMENT
         }
 
@@ -204,7 +180,7 @@ def iptables_action(action, source_ip):
 
             try:
                 subprocess.run(
-                    [IPTABLES, "-w", "5", "-I", "DOCKER-USER", "1"]
+                    [IPTABLES, "-w", "5", "-I", "INPUT", "1"]
                     + rule_args,
                     check=True,
                     capture_output=True,
@@ -219,7 +195,7 @@ def iptables_action(action, source_ip):
 
         log(
             f"Bloqueo agregado: {source_ip} "
-            f"hacia {container_ip}:{CONTAINER_PORT}"
+            f"hacia {TARGET_IP}:{WEB_PORT}"
         )
 
     elif action == "-D":
@@ -233,32 +209,34 @@ def iptables_action(action, source_ip):
                 or state.get("comment") != COMMENT):
             raise ValueError("El estado guardado no coincide")
 
-        container_ip = str(ipaddress.ip_address(state["container_ip"]))
+        target_ip = str(ipaddress.ip_address(state["target_ip"]))
 
-        if ipaddress.ip_address(container_ip) not in CONTAINER_NETWORK:
-            raise ValueError("IP guardada fuera de la red Docker autorizada")
+        if ipaddress.ip_address(target_ip) != TARGET_IP:
+            raise ValueError("IP guardada no corresponde al servidor objetivo")
+        lab_interface = get_lab_interface()
+        if state.get("interface") != lab_interface:
+            raise ValueError("La interfaz guardada no coincide con la red de laboratorio")
 
         rule_args = [
+            "-i", lab_interface,
             "-s", source_ip,
-            "-d", container_ip,
+            "-d", target_ip,
             "-p", "tcp",
-            "--dport", CONTAINER_PORT,
-            "-m", "conntrack",
-            "--ctstate", "NEW",
+            "--dport", WEB_PORT,
             "-m", "comment",
             "--comment", COMMENT,
             "-j", "DROP"
         ]
 
         check = subprocess.run(
-            [IPTABLES, "-w", "5", "-C", "DOCKER-USER"] + rule_args,
+            [IPTABLES, "-w", "5", "-C", "INPUT"] + rule_args,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL
         )
 
         if check.returncode == 0:
             subprocess.run(
-                [IPTABLES, "-w", "5", "-D", "DOCKER-USER"] + rule_args,
+                [IPTABLES, "-w", "5", "-D", "INPUT"] + rule_args,
                 check=True,
                 capture_output=True,
                 text=True

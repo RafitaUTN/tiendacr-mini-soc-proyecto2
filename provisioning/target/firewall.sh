@@ -20,7 +20,8 @@ ensure_rule() {
 # SSH is reachable through Vagrant's host-only port forward and from Kali.
 ensure_rule "22/tcp on $nat_iface" allow in on "$nat_iface" from 10.0.2.2 to any port 22 proto tcp
 ensure_rule "22/tcp on $lab_iface" allow in on "$lab_iface" from 10.10.10.30 to any port 22 proto tcp
-# Juice Shop is available only to the authorized attacker VM.
+# WAF is available only to the authorized attacker VM; the app container
+# listens only on loopback port 3001.
 ensure_rule "3000/tcp on $lab_iface" allow in on "$lab_iface" from 10.10.10.30 to 10.10.10.10 port 3000 proto tcp
 
 if [ "$nat_iface" != enp0s3 ]; then

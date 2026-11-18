@@ -1,0 +1,37 @@
+Revalidación final posterior al WAF: 2026-11-18. Red aislada
+tiendacr-lab (10.10.10.0/24).
+
+Target:
+- Servicio tiendacr-waf.service activo en 10.10.10.10:3000.
+- Juice Shop 17.2.0 en contenedor, puerto publicado solo en 127.0.0.1:3001.
+- La página base respondió HTTP 200 desde Kali.
+
+SQLi desde Kali:
+- Payload: GET /rest/products/search?q=%27%20OR%201=1--
+- Antes del WAF: HTTP 500; no se observó extracción de datos.
+- Con WAF: HTTP 403, X-TiendaCR-WAF: blocked, ~0.017 s; WAF log:
+  blocked reason=sql-injection src=10.10.10.30.
+- Suricata SID 1000003 y Wazuh 100100.
+- Active Response insertó DROP en INPUT para Kali -> 10.10.10.10:3000.
+  La petición de control expiró al límite de 3 s. El DROP expiró a los 180 s.
+- El mismo SQLi después del timeout devolvió HTTP 403 (~0.020 s); la página
+  normal siguió disponible en HTTP 200. El WAF bloquea la cadena probada; no
+  es un parche del código ni cubre todas las variantes de SQLi.
+
+Path traversal desde Kali después del WAF:
+- --path-as-is /..%2f..%2fetc%2fpasswd -> HTTP 403 (~0.019 s),
+  X-TiendaCR-WAF: blocked; WAF log blocked reason=path-traversal.
+- Suricata SID 1000004 y Wazuh 100102. No se leyó ni reportó contenido
+  de /etc/passwd.
+
+FIM post-acceso simulado desde Kali:
+- Se generó una llave ed25519 de uso temporal con comentario
+  codex-temp-fim-20261118 y se autorizó en el usuario vagrant del target.
+- Kali usó esa llave para añadir un marcador benigno solo en
+  /opt/tiendacr/fim-test/project-check.txt.
+- Wazuh agente 001 emitió regla 550 en el Manager; el evento registra cambios
+  de tamaño, mtime, MD5, SHA1 y SHA256.
+- La línea de authorized_keys con ese comentario se retiró; los archivos
+  privado y público temporales se borraron de Kali. No se dejó acceso temporal.
+
+Sin claves privadas, tokens, datos personales o logs completos.

@@ -12,10 +12,10 @@ que aún debe revisar personalmente el estudiante antes de entregar.
 | Firewall y SSH | Reglas por interfaz/origen y SSH con llave; sin root ni autenticación por contraseña. | Revisar con `docs/direccionamiento.md` al volver a provisionar. |
 | Suricata y Wazuh | Cuatro firmas Suricata y reglas Wazuh 100100/100101/100102 con validaciones sintácticas. | Terminado localmente. |
 | Active Response | SQLi de prueba activó el bloqueo acotado durante 180 s; se retiró al vencer y HTTP volvió a 200. | Terminado localmente. |
-| Pruebas y evidencias | Reconocimiento, SSH, SQLi, traversal y FIM revalidados; evidencia nueva `E07-revalidacion-kali.txt`. | Pruebas técnicas terminadas; demo oral pendiente. |
-| Vulnerabilidades | Feed y scanner activos; Indexer reporta 2578 docs para SIEM, sin índice observado del agente objetivo. | Parcial; no afirmar CVE del objetivo. |
-| Remediación | SSH por contraseña rechaza; SQLi detecta y el Active Response bloquea 180 s y recupera servicio. Juice Shop sigue vulnerable después del timeout. | Parcial; falta corrección persistente del componente o una capa preventiva validada y repetición SQLi que pruebe bloqueo persistente. |
-| FIM desde Kali | Wazuh 550 volvió a alertar al cambiar el archivo benigno del agente. | FIM cumple; esta comprobación fue local/administrativa, no intrusión remota desde Kali. |
+| Pruebas y evidencias | Reconocimiento, SSH, SQLi, traversal y FIM desde Kali revalidados; evidencias E07/E08 actualizadas. | Pruebas técnicas terminadas; demo oral pendiente. |
+| Vulnerabilidades | Consulta autenticada del índice global: 629 paquetes y 2578 registros vinculados a `agent.id=001`; muestra de CVE-2026-99282 del kernel bajo evaluación. | Inventario del agente comprobado; priorizar CVE/estado en Dashboard. |
+| Remediación | SSH por contraseña rechaza; WAF devuelve 403 al SQLi/traversal probados incluso después del timeout de Active Response; HTTP normal sigue en 200. | Control compensatorio validado. Juice Shop permanece vulnerable a variantes y requiere aislamiento; no se afirma parche de código. |
+| FIM desde Kali | Llave temporal autorizada simuló acceso comprometido; modificación benigna disparó Wazuh 550; la llave se revocó y borró. | Cumple como escenario de integridad post-acceso simulado. |
 | Informe | DOCX/PDF final de 20 páginas; fuentes, latencias, ATT&CK, riesgos y anexos. Publicado junto a matriz requisito por requisito. | Revisado; revisar antes de entrega académica. |
 | Repositorio público | [RafitaUTN/tiendacr-mini-soc-proyecto2](https://github.com/RafitaUTN/tiendacr-mini-soc-proyecto2), público, historial limpio con un commit del Proyecto 2; archivos seleccionados y evidencia sanitizada. | Publicado y verificado. |
 | Individual / coevaluación | No se inventaron contribuciones de otra persona. | Pendiente: confirmar modalidad individual, ejecutar defensa oral y completar los formularios aplicables. |

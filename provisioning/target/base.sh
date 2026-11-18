@@ -8,10 +8,6 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
 systemctl enable --now docker
 systemctl enable --now ssh
 
-install -d -m 0755 /opt/tiendacr/juice-shop
-cp /vagrant/docker/juice-shop/docker-compose.yml /opt/tiendacr/juice-shop/docker-compose.yml
-docker-compose -f /opt/tiendacr/juice-shop/docker-compose.yml up -d
-
 suricata_iface="$(ip route show 10.10.10.0/24 | awk 'NR == 1 {for (i = 1; i <= NF; i++) if ($i == "dev") {print $(i + 1); exit}}')"
 if [ -z "$suricata_iface" ]; then
   suricata_iface="$(ip -o link show | awk -F': ' '$2 != "lo" {print $2; exit}')"

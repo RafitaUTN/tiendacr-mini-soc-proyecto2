@@ -19,7 +19,7 @@ vagrant up attacker
 ```powershell
 vagrant ssh siem -c "sudo systemctl is-active wazuh-manager wazuh-indexer wazuh-dashboard filebeat"
 vagrant ssh siem -c "sudo /var/ossec/bin/agent_control -lc"
-vagrant ssh target -c "sudo systemctl is-active docker suricata wazuh-agent tiendacr-docker-filter.service"
+vagrant ssh target -c "sudo systemctl is-active docker suricata wazuh-agent tiendacr-docker-filter.service tiendacr-waf.service"
 vagrant ssh target -c "sudo docker ps --format '{{.Names}} {{.Status}}'"
 vagrant ssh attacker -c "curl -sS -o /dev/null -w 'HTTP=%{http_code}\n' http://10.10.10.10:3000/"
 ```
@@ -36,8 +36,8 @@ vagrant ssh attacker -c "curl -sS -o /dev/null -w 'HTTP=%{http_code}\n' http://1
 3. Ejecutar cinco conexiones SSH con un usuario ficticio y autenticación por
    llave (`BatchMode`) para demostrar el rechazo y correlación 100101. No
    habilitar contraseñas ni usar cuentas reales.
-4. Enviar una única solicitud SQLi de laboratorio y mostrar SID 1000003,
-   Wazuh 100100 y el evento de Active Response:
+4. Enviar una única solicitud SQLi de laboratorio y mostrar WAF HTTP 403,
+   SID 1000003, Wazuh 100100 y Active Response:
 
    ```bash
    curl -sS --max-time 8 -o /dev/null -w 'HTTP=%{http_code}\n' \
@@ -45,8 +45,8 @@ vagrant ssh attacker -c "curl -sS -o /dev/null -w 'HTTP=%{http_code}\n' http://1
    ```
 
 5. Mostrar que Kali no alcanza temporalmente el servicio durante 180 segundos;
-   esperar el timeout y confirmar HTTP 200. No quitar manualmente la regla
-   durante la demostración.
+   esperar el timeout, repetir la SQLi para ver el 403 persistente del WAF y
+   confirmar HTTP 200 en la página normal. No quitar manualmente la regla.
 6. Mostrar el evento FIM 550 de la ruta `/opt/tiendacr/fim-test` y explicar el
    riesgo residual de mantener Juice Shop como aplicación intencionalmente
    vulnerable.

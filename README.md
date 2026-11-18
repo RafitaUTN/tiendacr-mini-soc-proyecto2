@@ -8,6 +8,7 @@ tráfico a redes o sistemas externos.
 
 - Kali atacante: `10.10.10.30`.
 - Objetivo Ubuntu 22.04.5: `10.10.10.10`, Juice Shop 17.2.0 en Docker,
+  WAF local en `:3000`, upstream de Juice Shop solo en `127.0.0.1:3001`,
   Suricata 6.0.4 y Wazuh Agent 001 activo.
 - SIEM Ubuntu 24.04.3: `10.10.10.20`, Wazuh Manager, Indexer, Dashboard y
   Filebeat activos.
@@ -17,9 +18,9 @@ tráfico a redes o sistemas externos.
   100100 (SQLi), 100101 (umbral de intentos SSH) y 100102 (traversal).
 - Evidencia real sanitizada en [`evidence/2026-11-18`](evidence/2026-11-18/).
 - Informe final de 20 páginas: [`DOCX`](Informe%20tecnico/Informe%20de%20investigacion%20-%20Proyecto%202%20final.docx) y [`PDF`](Informe%20tecnico/Informe%20de%20investigacion%20-%20Proyecto%202%20final.pdf).
-- Vulnerabilidades: feed/indexer activos; confirmar en Dashboard el inventario específico del agente objetivo antes de afirmar CVE detectados.
+- Vulnerabilidades: consulta Indexer confirmó 629 paquetes y 2578 registros CVE asociados al agente 001; una muestra está bajo evaluación, así que su estado debe priorizarse en Dashboard.
 - Revalidación requisito por requisito, con resultados y pendientes: [`docs/VALIDACION_FINAL.md`](docs/VALIDACION_FINAL.md).
-- La verificación actual deja explícitos tres puntos parciales: inventario de vulnerabilidades del agente objetivo no confirmado, Juice Shop continúa vulnerable después del bloqueo SQLi temporal y la prueba FIM se originó localmente. Consulte la matriz de validación antes de la defensa.
+- La verificación actual deja explícitos los límites: Juice Shop sigue siendo vulnerable a variantes no cubiertas por el WAF de firmas; se bloqueó el payload probado incluso después del timeout de Active Response. Consulte la matriz antes de la defensa.
 
 ## Requisitos del equipo
 
@@ -42,7 +43,7 @@ Verificar servicios y agente:
 ```powershell
 vagrant ssh siem -c "sudo systemctl is-active wazuh-manager wazuh-indexer wazuh-dashboard filebeat"
 vagrant ssh siem -c "sudo /var/ossec/bin/agent_control -lc"
-vagrant ssh target -c "sudo systemctl is-active docker suricata wazuh-agent tiendacr-docker-filter.service"
+vagrant ssh target -c "sudo systemctl is-active docker suricata wazuh-agent tiendacr-docker-filter.service tiendacr-waf.service"
 vagrant ssh attacker -c "curl -sS -o /dev/null -w '%{http_code}\n' http://10.10.10.10:3000/"
 ```
 
