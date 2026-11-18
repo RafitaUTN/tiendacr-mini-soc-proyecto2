@@ -1,0 +1,2 @@
+2026/11/18 07:47:23 tiendacr-docker-drop: Bloqueo agregado: 10.10.10.30 hacia 172.18.0.2:3000
+2026/11/18 07:50:23 tiendacr-docker-drop: Bloqueo retirado: 10.10.10.30

@@ -1,0 +1,33 @@
+.vagrant/
+__pycache__/
+*.py[cod]
+*.box
+*.ova
+*.iso
+evidence/**/*.pcap
+evidence/**/*.log
+evidence/**/*.json
+reports/**/*.csv
+*.key
+*.pem
+.env
+*.env
+*.key
+*.pem
+*.p12
+*.pfx
+*.sqlite
+*.db
+*.vdi
+*.vbox
+*.log.*
+*.pcapng
+Informe tecnico/*respaldo*.docx
+Informe tecnico/rendered/
+Informe tecnico/~$*.docx
+Informe tecnico/Informe de investigacion .docx
+Informe tecnico/Informe de inventigacion contecto.txt
+Contexto.md
+Conversacion de IA.md
+docs/test-*.sh
+docs/inspect-cert-material.py

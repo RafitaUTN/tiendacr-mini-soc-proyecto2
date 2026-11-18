@@ -1,0 +1,4 @@
+alert tcp any any -> $HOME_NET 3000 (msg:"TiendaCR Juice Shop connection"; flow:to_server,established; sid:1000001; rev:1;)
+alert tcp any any -> $HOME_NET 22 (msg:"TiendaCR SSH connection attempt"; flow:to_server; flags:S; sid:1000002; rev:2;)
+alert http any any -> $HOME_NET 3000 (msg:"TiendaCR Possible SQL injection - encoded quote"; flow:established,to_server; http.uri.raw; content:"%27"; nocase; sid:1000003; rev:1;)
+alert http any any -> $HOME_NET 3000 (msg:"TiendaCR Possible path traversal"; flow:established,to_server; http.uri.raw; content:"..%2f"; nocase; sid:1000004; rev:1;)

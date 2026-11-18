@@ -1,0 +1,10 @@
+# Nmap 7.991 scan initiated Wed Nov 18 02:41:14 2026 as: /usr/lib/nmap/nmap --privileged -Pn -sT -p 22,3000 -oN /tmp/tiendacr-nmap.txt 10.10.10.10
+Nmap scan report for ubuntu-servidor-objetivo (10.10.10.10)
+Host is up (0.0016s latency).
+
+PORT     STATE SERVICE
+22/tcp   open  ssh
+3000/tcp open  ppp
+
+# Nmap done at Wed Nov 18 02:41:14 2026 -- 1 IP address (1 host up) scanned in 0.09 seconds
+\nSuricata IDS: [{"timestamp": "2026-11-18T07:40:14.077029+0000", "sid": 1000002, "signature": "TiendaCR SSH connection attempt", "source_ip": "10.10.10.30", "destination_ip": "10.10.10.10", "destination_port": 22}, {"timestamp": "2026-11-18T07:40:14.086301+0000", "sid": 1000001, "signature": "TiendaCR Juice Shop connection", "source_ip": "10.10.10.30", "destination_ip": "10.10.10.10", "destination_port": 3000}]\n

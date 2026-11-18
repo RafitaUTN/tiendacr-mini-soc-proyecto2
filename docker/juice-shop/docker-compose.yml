@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  juice-shop:
+    image: bkimminich/juice-shop:v17.2.0
+    container_name: tiendacr-juice-shop-nuevo
+    restart: unless-stopped
+    ports:
+      - "10.10.10.10:3000:3000"
+    read_only: true
+    tmpfs:
+      - /juice-shop/data:rw,nosuid,nodev,uid=65532,gid=65532,mode=0755
+    security_opt:
+      - no-new-privileges:true

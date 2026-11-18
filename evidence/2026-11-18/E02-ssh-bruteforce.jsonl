@@ -1,0 +1,1 @@
+{"timestamp": "2026-11-18T07:46:11.296+0000", "rule_id": "100101", "description": "TiendaCR: cinco fallos de autenticación SSH desde una misma IP en 120 segundos", "agent": "ubuntu-servidor-objetivo", "source_ip": "10.10.10.30"}\n

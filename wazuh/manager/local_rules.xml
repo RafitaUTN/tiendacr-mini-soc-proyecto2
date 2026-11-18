@@ -1,0 +1,31 @@
+<group name="tiendacr,suricata,web_attack,">
+  <rule id="100100" level="10">
+    <if_sid>86601</if_sid>
+    <field name="alert.signature_id">^1000003$</field>
+    <description>TiendaCR: posible inyección SQL detectada por Suricata</description>
+    <group>web_attack,sql_injection,</group>
+    <mitre>
+      <id>T1190</id>
+    </mitre>
+  </rule>
+
+  <rule id="100102" level="10">
+    <if_sid>86601</if_sid>
+    <field name="alert.signature_id">^1000004$</field>
+    <description>TiendaCR: posible path traversal detectado por Suricata</description>
+    <group>web_attack,path_traversal,</group>
+    <mitre>
+      <id>T1190</id>
+    </mitre>
+  </rule>
+
+  <rule id="100101" level="10" frequency="5" timeframe="120">
+    <if_matched_sid>5710</if_matched_sid>
+    <same_source_ip />
+    <description>TiendaCR: cinco fallos de autenticación SSH desde una misma IP en 120 segundos</description>
+    <group>authentication_failures,brute_force,</group>
+    <mitre>
+      <id>T1110.001</id>
+    </mitre>
+  </rule>
+</group>

@@ -1,0 +1,44 @@
+Fecha: 18-11-2026
+SIEM servicios:
+active
+active
+active
+active
+Agentes Wazuh:
+
+Wazuh agent_control. List of available agents:
+   ID: 000, Name: ubuntu-servidor-siem (server), IP: 127.0.0.1, Active/Local
+   ID: 001, Name: ubuntu-servidor-objetivo, IP: any, Active
+
+UFW objetivo:
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), deny (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+22/tcp on enp0s3           ALLOW IN    10.0.2.2                  
+22/tcp on enp0s8           ALLOW IN    10.10.10.30               
+10.10.10.10 3000/tcp on enp0s8 ALLOW IN    10.10.10.30               
+
+SSH objetivo efectivo:
+permitrootlogin no
+pubkeyauthentication yes
+passwordauthentication no
+UFW SIEM:
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), disabled (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+22/tcp on eth0             ALLOW IN    10.0.2.2                  
+22/tcp on eth1             ALLOW IN    10.10.10.30               
+10.10.10.20 1514/tcp on eth1 ALLOW IN    10.10.10.10               
+10.10.10.20 1514/udp on eth1 ALLOW IN    10.10.10.10               
+10.10.10.20 1515/tcp on eth1 ALLOW IN    10.10.10.10               
+10.10.10.20 443/tcp on eth1 ALLOW IN    10.10.10.30               
+443/tcp on eth0            ALLOW IN    10.0.2.2                  
+
