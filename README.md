@@ -18,6 +18,8 @@ tráfico a redes o sistemas externos.
 - Evidencia real sanitizada en [`evidence/2026-11-18`](evidence/2026-11-18/).
 - Informe final de 20 páginas: [`DOCX`](Informe%20tecnico/Informe%20de%20investigacion%20-%20Proyecto%202%20final.docx) y [`PDF`](Informe%20tecnico/Informe%20de%20investigacion%20-%20Proyecto%202%20final.pdf).
 - Vulnerabilidades: feed/indexer activos; confirmar en Dashboard el inventario específico del agente objetivo antes de afirmar CVE detectados.
+- Revalidación requisito por requisito, con resultados y pendientes: [`docs/VALIDACION_FINAL.md`](docs/VALIDACION_FINAL.md).
+- La verificación actual deja explícitos tres puntos parciales: inventario de vulnerabilidades del agente objetivo no confirmado, Juice Shop continúa vulnerable después del bloqueo SQLi temporal y la prueba FIM se originó localmente. Consulte la matriz de validación antes de la defensa.
 
 ## Requisitos del equipo
 

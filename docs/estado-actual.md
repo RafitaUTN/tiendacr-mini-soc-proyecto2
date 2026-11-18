@@ -1,6 +1,6 @@
 # Estado actual del Mini SOC TiendaCR
 
-**Corte de validación:** 18 de noviembre de 2026.  
+**Corte de validación:** 18 de noviembre de 2026, revalidación en vivo.  
 **Entorno:** Vagrant/VirtualBox, red interna `tiendacr-lab` (`10.10.10.0/24`).
 
 ## Componentes verificados
@@ -19,6 +19,8 @@
 - Active Response añadió una regla DROP de Kali a Juice Shop por 180 segundos; el intento siguiente expiró y, al vencer el temporizador, el sitio volvió a HTTP 200.
 - Solicitud traversal registrada como SID 1000004; HTTP 200, sin evidencia de lectura de `/etc/passwd`.
 - Modificación de `/opt/tiendacr/fim-test/project-check.txt` detectada por Wazuh Syscheck, regla 550.
+- Revalidación desde Kali: Nmap en 22/3000; Hydra con una credencial ficticia confirmó que password auth no se ofrece; cinco intentos SSH provocaron 100101; SQLi provocó 100100 y bloqueo por 180 s; tras el timeout volvió HTTP 200. Traversal provocó 100102 y respondió HTTP 200 sin probar lectura.
+- Revalidación de FIM: escritura de un marcador benigno en el archivo de control generó nuevamente Wazuh 550 en el Manager.
 - Suricata valida las reglas locales; `vagrant validate` y sintaxis de los scripts Bash verificadas.
 
 La evidencia JSONL y las notas mínimas están en
@@ -52,6 +54,7 @@ ni registros completos de autenticación.
 - El estudiante indicó que realiza el proyecto solo. El curso describe el
   trabajo en parejas; la aceptación de modalidad individual debe confirmarse
   con el profesor. No se inventan aportes ni coevaluación.
-- El informe final DOCX/PDF es local y la demostración oral aún debe ser
-  realizada por el estudiante. El repositorio público todavía no se publicó;
-  el historial y los archivos de entrega requieren una revisión final.
+- La demostración oral aún debe ser realizada por el estudiante. El informe
+  tiene 20 páginas y DOCX/PDF están en el repositorio público con historial
+  limpio.
+- Revisión detallada contra cada punto del enunciado: `VALIDACION_FINAL.md`.

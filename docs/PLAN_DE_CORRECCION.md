@@ -7,16 +7,18 @@ que aún debe revisar personalmente el estudiante antes de entregar.
 | Área | Resultado comprobado | Estado / siguiente paso |
 |---|---|---|
 | Vagrant y tres VM | `vagrant validate`; las VMs `attacker`, `target` y `siem` están en ejecución. | Terminado localmente. |
-| Telemetría | Manager, Indexer, Dashboard y Filebeat activos; agente 001 Active. Las alertas de pruebas llegan a Wazuh. | Terminado localmente. |
+| Telemetría | Manager, Indexer, Dashboard y Filebeat activos; agente 001 Active. Filebeat prueba TLS/conexión; alertas de ataques llegan a Manager y al Indexer. | Terminado para logs/alertas. |
 | Cuenta Manager→Indexer | Cuenta técnica dedicada y rol de alcance limitado a índices `wazuh-states-*`; contraseña aleatoria guardada en el keystore de Wazuh. | Provisioning reproducible en `provisioning/siem/`. |
 | Firewall y SSH | Reglas por interfaz/origen y SSH con llave; sin root ni autenticación por contraseña. | Revisar con `docs/direccionamiento.md` al volver a provisionar. |
 | Suricata y Wazuh | Cuatro firmas Suricata y reglas Wazuh 100100/100101/100102 con validaciones sintácticas. | Terminado localmente. |
 | Active Response | SQLi de prueba activó el bloqueo acotado durante 180 s; se retiró al vencer y HTTP volvió a 200. | Terminado localmente. |
-| Pruebas y evidencias | Reconocimiento, SSH, SQLi, traversal y FIM registrados en archivos sanitizados. | Terminado localmente; demo oral pendiente. |
-| Vulnerabilidades | Feed finalizó la actualización y el Manager creó índices de estado locales. | Confirmar en Dashboard la vista del agente 001 y guardar captura; aún no se atribuyen CVE al objetivo sin esa verificación. |
-| Informe | DOCX final de 20 páginas con resultados, latencias, ATT&CK, riesgos y anexo de evidencias; PDF renderizado para revisión. | Revisar personalmente datos y estilo antes de entregar. |
+| Pruebas y evidencias | Reconocimiento, SSH, SQLi, traversal y FIM revalidados; evidencia nueva `E07-revalidacion-kali.txt`. | Pruebas técnicas terminadas; demo oral pendiente. |
+| Vulnerabilidades | Feed y scanner activos; Indexer reporta 2578 docs para SIEM, sin índice observado del agente objetivo. | Parcial; no afirmar CVE del objetivo. |
+| Remediación | SSH por contraseña rechaza; SQLi detecta y el Active Response bloquea 180 s y recupera servicio. Juice Shop sigue vulnerable después del timeout. | Parcial; falta corrección persistente del componente o una capa preventiva validada y repetición SQLi que pruebe bloqueo persistente. |
+| FIM desde Kali | Wazuh 550 volvió a alertar al cambiar el archivo benigno del agente. | FIM cumple; esta comprobación fue local/administrativa, no intrusión remota desde Kali. |
+| Informe | DOCX/PDF final de 20 páginas; fuentes, latencias, ATT&CK, riesgos y anexos. Publicado junto a matriz requisito por requisito. | Revisado; revisar antes de entrega académica. |
 | Repositorio público | [RafitaUTN/tiendacr-mini-soc-proyecto2](https://github.com/RafitaUTN/tiendacr-mini-soc-proyecto2), público, historial limpio con un commit del Proyecto 2; archivos seleccionados y evidencia sanitizada. | Publicado y verificado. |
-| Individual / coevaluación | No se inventaron contribuciones de otra persona. | Confirmar con el profesor que acepta modalidad individual; completar la defensa y los formularios que correspondan. |
+| Individual / coevaluación | No se inventaron contribuciones de otra persona. | Pendiente: confirmar modalidad individual, ejecutar defensa oral y completar los formularios aplicables. |
 
 ## Revalidación local
 

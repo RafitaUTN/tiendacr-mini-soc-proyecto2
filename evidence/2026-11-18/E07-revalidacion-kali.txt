@@ -1,0 +1,30 @@
+Revalidación en vivo: 2026-11-18. Alcance 10.10.10.0/24.
+
+Kali 10.10.10.30:
+- Herramientas presentes: /usr/bin/nmap, /usr/bin/hydra, /usr/bin/curl.
+- nmap -Pn -sT -sV -p 22,3000 --version-light 10.10.10.10
+  TCP/22 open OpenSSH 8.9p1; TCP/3000 open, Juice Shop responde HTTP 200.
+- Hydra: usuario laboratorio-inexistente y contraseña ficticia DemoOnlyNotReal123,
+  una sola tarea/credencial; resultado "does not support password authentication".
+- Cinco conexiones SSH con usuario inexistente desde Kali: rechazadas por
+  publickey; Wazuh emitió regla 100101 para agente 001.
+- SQLi: GET /rest/products/search?q=%27%20OR%201=1--; HTTP 500, ~0.45 s;
+  Suricata 1000003 y Wazuh 100100. No se observó extracción de datos.
+- Respuesta automática: DROP limitado a 10.10.10.30 -> 172.18.0.2:3000;
+  petición posterior agotó 3 s. Tras expirar el timeout de 180 s, el DROP
+  desapareció y la página base volvió a HTTP 200 (~0.08 s).
+- Path traversal --path-as-is /..%2f..%2fetc%2fpasswd; HTTP 200 (~0.13 s),
+  Suricata 1000004 y Wazuh 100102. No se confirmó lectura del archivo.
+
+Target / SIEM:
+- Suricata 6.0.4: configuración probada; 4 reglas cargadas, 0 fallidas.
+- Wazuh Manager: wazuh-analysisd -t correcto; agente 001 Active.
+- Filebeat test output: TLS verificado y conexión a Indexer 127.0.0.1:9200.
+- FIM: modificación del marcador benigno project-check.txt en
+  /opt/tiendacr/fim-test; Wazuh regla 550 observada en alerts.json.
+- Indexer: 2578 documentos en vulnerabilidades del SIEM; no apareció índice
+  wazuh-states-vulnerabilities del agente objetivo.
+
+La prueba FIM fue una simulación administrativa local del cambio de archivo,
+no una intrusión remota desde Kali. No incluye claves, credenciales ni logs
+completos de autenticación.
