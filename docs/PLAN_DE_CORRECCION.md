@@ -15,7 +15,7 @@ que aún debe revisar personalmente el estudiante antes de entregar.
 | Pruebas y evidencias | Reconocimiento, SSH, SQLi, traversal y FIM registrados en archivos sanitizados. | Terminado localmente; demo oral pendiente. |
 | Vulnerabilidades | Feed finalizó la actualización y el Manager creó índices de estado locales. | Confirmar en Dashboard la vista del agente 001 y guardar captura; aún no se atribuyen CVE al objetivo sin esa verificación. |
 | Informe | DOCX final de 20 páginas con resultados, latencias, ATT&CK, riesgos y anexo de evidencias; PDF renderizado para revisión. | Revisar personalmente datos y estilo antes de entregar. |
-| Repositorio público | Publicación autorizada por el estudiante; se creará con historial limpio y solo archivos seleccionados del Proyecto 2. | En publicación. |
+| Repositorio público | [RafitaUTN/tiendacr-mini-soc-proyecto2](https://github.com/RafitaUTN/tiendacr-mini-soc-proyecto2), público, historial limpio con un commit del Proyecto 2; archivos seleccionados y evidencia sanitizada. | Publicado y verificado. |
 | Individual / coevaluación | No se inventaron contribuciones de otra persona. | Confirmar con el profesor que acepta modalidad individual; completar la defensa y los formularios que correspondan. |
 
 ## Revalidación local
