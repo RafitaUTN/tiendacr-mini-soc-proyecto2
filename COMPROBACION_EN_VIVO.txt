@@ -83,6 +83,9 @@ La ventana InPrivate evita reutilizar esas cookies. Si funciona, se puede
 borrar el almacenamiento del sitio 127.0.0.1 en el perfil habitual de Edge.
 El mensaje “No seguro” corresponde al certificado autofirmado del laboratorio;
 la excepción debe aceptarse manualmente en el propio navegador.
+El timeout del Dashboard está ajustado a 60 segundos para absorber picos
+temporales durante la carga inicial del feed de vulnerabilidades. Después de
+reiniciar el Dashboard, puede tardar unos minutos en levantar completamente.
 
 Para cerrar un túnel: volver a su ventana y presionar Ctrl+C. Los túneles
 escuchan solo en 127.0.0.1 del host; no se publica el puerto a la LAN ni a

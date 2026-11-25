@@ -15,3 +15,18 @@ Revalidacion de acceso Wazuh Dashboard — 25-11-2026
   laboratorio es autofirmado y genera la advertencia “No seguro”.
 - Se retiró el archivo temporal local usado durante la rotación. No se guardó
   ninguna contraseña en el repositorio ni en las evidencias.
+
+Seguimiento del timeout en /app/wz-home:
+- El registro del Dashboard identificó `WzMenu.componentDidMount: timeout of
+  20000ms exceeded`. Durante la actualización inicial del feed de
+  vulnerabilidades, la API llegó a tardar 39 s en autenticar y 26 s en una
+  consulta general; las consultas actuales bajaron a 0.7–1.1 s.
+- El timeout de solicitudes API de Wazuh Dashboard se elevó a 60000 ms en
+  `/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml`; la copia previa
+  quedó protegida en `/root/tiendacr-backups/` dentro de la VM.
+- Se reinició solo wazuh-dashboard. Después, Manager, Indexer, Dashboard y
+  Filebeat quedaron activos; el agente 001 continuó Active.
+- Con una sesión limpia, POST `/auth/login` devolvió HTTP 200 y una sesión
+  autenticada pudo solicitar `/app/wz-home` con HTTP 200.
+- Desde Kali: aplicación normal HTTP 200. Docker, Suricata, agente Wazuh,
+  filtro Docker y WAF activos; contenedor Juice Shop Up.

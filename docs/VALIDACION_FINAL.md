@@ -10,6 +10,13 @@ Además, el túnel local al Dashboard respondió HTTP 302 y el de Juice Shop HTT
 200. El PDF final tiene 19 páginas.
 Las salidas resumidas de esta revalidación se guardan en
 [`../evidence/2026-11-25/E09-revalidacion-host.txt`](../evidence/2026-11-25/E09-revalidacion-host.txt).
+El 25-11 también se corrigió un timeout intermitente de `/app/wz-home`: una
+actualización inicial del feed de vulnerabilidades elevó temporalmente las
+respuestas de la API por encima del límite de 20 s. Se configuró el límite del
+Dashboard en 60 s y se reinició solo ese servicio. Después, la API regresó a
+menos de 1.1 s en las consultas probadas; el login fue HTTP 200, una sesión
+autenticada cargó `/app/wz-home` con HTTP 200 y las cuatro unidades siguieron
+activas. Ver evidencia E10.
 
 Alcance: comprobaciones realizadas desde el host y Kali dentro de la red privada
 Vagrant `tiendacr-lab` (`10.10.10.0/24`). No se escanearon redes externas ni se

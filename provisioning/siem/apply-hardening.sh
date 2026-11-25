@@ -57,9 +57,34 @@ if "<command>tiendacr-docker-drop</command>" not in text:
 path.write_text(text)
 PY
 
+# The local SIEM VM shares limited host resources with the target and attacker.
+# Give Wazuh Dashboard API requests 60 seconds during startup/feed evaluation;
+# the default 20 seconds can expire while the Manager is busy correlating data.
+dashboard_config=/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml
+if [ -f "$dashboard_config" ]; then
+  if [ ! -e "$backup_dir/wazuh-dashboard-wazuh.yml.before-api-timeout" ]; then
+    cp -a "$dashboard_config" "$backup_dir/wazuh-dashboard-wazuh.yml.before-api-timeout"
+  fi
+  python3 - <<'PY'
+from pathlib import Path
+import re
+
+path = Path("/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml")
+text = path.read_text()
+if re.search(r"(?m)^\s*timeout:\s*\d+\s*$", text):
+    text = re.sub(r"(?m)^\s*timeout:\s*\d+\s*$", "timeout: 60000", text, count=1)
+elif re.search(r"(?m)^#\s*timeout:\s*\d+\s*$", text):
+    text = re.sub(r"(?m)^#\s*timeout:\s*\d+\s*$", "timeout: 60000", text, count=1)
+else:
+    text = "timeout: 60000\n" + text
+path.write_text(text)
+PY
+fi
+
 /var/ossec/bin/wazuh-analysisd -t
 systemctl restart wazuh-manager
 systemctl enable --now wazuh-indexer wazuh-dashboard
+systemctl restart wazuh-dashboard
 
 if [ -s /etc/filebeat/filebeat.yml ]; then
   filebeat test config -e
