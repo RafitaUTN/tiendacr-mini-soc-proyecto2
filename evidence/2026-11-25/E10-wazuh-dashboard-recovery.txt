@@ -1,0 +1,17 @@
+Revalidacion de acceso Wazuh Dashboard — 25-11-2026
+
+- wazuh-manager, wazuh-indexer, wazuh-dashboard y filebeat: active.
+- Agente 001 ubuntu-servidor-objetivo: Active.
+- Sin sesion/cookies en cliente HTTP, GET / devuelve HTTP 302 a /app/login.
+- GET /app/login devuelve HTTP 200 (HTML de login).
+- POST /auth/login con el usuario admin y la nueva clave: HTTP 200.
+- Prueba de autenticacion de usuario admin contra Indexer: HTTP 200.
+- Filebeat test output: TLS validado, handshake y conexion satisfactorios.
+- El Dashboard registró Authentication Exception en solicitudes del navegador
+  Edge a / y /favicon.ico durante una sesión previa. El patrón es compatible
+  con una cookie/sesión antigua posterior a la rotación de la contraseña.
+- Remedio en cliente: abrir ventana InPrivate e ir a /app/login; alternativamente
+  borrar datos del sitio 127.0.0.1 y volver a cargar. El certificado HTTPS del
+  laboratorio es autofirmado y genera la advertencia “No seguro”.
+- Se retiró el archivo temporal local usado durante la rotación. No se guardó
+  ninguna contraseña en el repositorio ni en las evidencias.

@@ -72,6 +72,18 @@ navegador. HTTP 302 es esperado: lleva a la pantalla de inicio de sesión.
 Usar las credenciales locales del Dashboard; no guardarlas en este archivo
 ni en Git.
 
+Si Edge muestra JSON HTTP 500 después de haber usado el panel antes, cerrar
+esa pestaña y probar en una ventana InPrivate (Ctrl+Shift+N) directamente en
+https://127.0.0.1:8443/app/login. En la verificación del 25-11, la raíz sin
+sesión devolvió 302, /app/login devolvió 200 y un POST de login válido devolvió
+200; los registros mostraron
+Authentication Exception en peticiones de Edge a / y /favicon.ico. Esto es
+compatible con una cookie/sesión antigua tras la rotación de la clave admin.
+La ventana InPrivate evita reutilizar esas cookies. Si funciona, se puede
+borrar el almacenamiento del sitio 127.0.0.1 en el perfil habitual de Edge.
+El mensaje “No seguro” corresponde al certificado autofirmado del laboratorio;
+la excepción debe aceptarse manualmente en el propio navegador.
+
 Para cerrar un túnel: volver a su ventana y presionar Ctrl+C. Los túneles
 escuchan solo en 127.0.0.1 del host; no se publica el puerto a la LAN ni a
 Internet y no se cambia el firewall de las VM.

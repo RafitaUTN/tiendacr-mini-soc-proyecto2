@@ -21,6 +21,9 @@ En el navegador del host abrir:
 El Dashboard usa certificado de laboratorio; aceptar la advertencia local.
 Usuario: admin. Usar la clave comunicada en la conversacion, no copiarla a
 este archivo ni al repositorio.
+Si un perfil que ya habia iniciado sesion presenta HTTP 500, abrir una ventana
+InPrivate (Ctrl+Shift+N) y cargar https://127.0.0.1:8443/app/login para evitar
+reusar la sesion anterior.
 
 MINUTO 0–1 — INTRODUCCION Y ALCANCE
 
