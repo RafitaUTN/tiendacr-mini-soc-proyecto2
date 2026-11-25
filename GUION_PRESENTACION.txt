@@ -1,0 +1,174 @@
+GUION DE PRESENTACION — PROYECTO 2: MINI SOC TIENDACR
+Duracion: 10 minutos + 5 minutos de preguntas
+Laboratorio: Vagrant / VirtualBox / red interna tiendacr-lab
+
+ANTES DE INICIAR EL CRONOMETRO
+
+En PowerShell, desde C:\Users\rafad\Music\Proyecto_Seguridad:
+
+  vagrant status
+  vagrant ssh target -- -N -L 127.0.0.1:8300:10.10.10.10:3000
+
+Dejar este comando corriendo en una ventana PowerShell. En una SEGUNDA
+ventana PowerShell, abrir el tunel del Dashboard y dejarlo corriendo:
+
+  vagrant ssh siem -- -N -L 127.0.0.1:8443:127.0.0.1:443
+
+En el navegador del host abrir:
+  Tienda:     http://127.0.0.1:8300/
+  Dashboard:  https://127.0.0.1:8443/
+
+El Dashboard usa certificado de laboratorio; aceptar la advertencia local.
+Usuario: admin. Usar la clave comunicada en la conversacion, no copiarla a
+este archivo ni al repositorio.
+
+MINUTO 0–1 — INTRODUCCION Y ALCANCE
+
+ACCION (PowerShell):
+  vagrant status
+
+DECIR:
+“Buenos días. Presento el Mini SOC de TiendaCR, desplegado en tres máquinas
+virtuales en una red interna. Kali, en 10.10.10.30, genera el tráfico de
+prueba; Ubuntu Target, en 10.10.10.10, ejecuta Juice Shop y Suricata; y
+Ubuntu SIEM, en 10.10.10.20, centraliza eventos en Wazuh. Todas las pruebas
+se limitan a máquinas propias dentro de esta red aislada.”
+
+MINUTO 1–2 — CONTROLES Y VISTA EN EL HOST
+
+ACCION: mostrar la tienda y el Dashboard en las dos pestañas preparadas.
+En PowerShell:
+
+  vagrant ssh target -c "sudo ufw status verbose; sudo sshd -T | grep -E '^(permitrootlogin|passwordauthentication|pubkeyauthentication)'"
+
+DECIR:
+“En el host puedo ver la aplicación y el panel mediante túneles SSH locales.
+No expuse Juice Shop a Internet. El firewall niega por defecto y permite solo
+los orígenes y puertos de administración y del laboratorio. SSH no permite
+contraseña ni acceso root directo; usa llaves.”
+
+ACCIÓN EN DASHBOARD: mostrar que el agente `ubuntu-servidor-objetivo` aparece
+activo y que los eventos se reciben en el panel.
+
+MINUTO 2–3 — ATAQUE 1: RECONOCIMIENTO
+
+ACCION (PowerShell):
+  vagrant ssh attacker -c "nmap -Pn -sT -sV -p 22,3000 --version-light 10.10.10.10"
+
+DECIR:
+“Desde Kali hago un reconocimiento acotado a los dos puertos que el proyecto
+necesita. El escaneo identifica SSH y la aplicación web; Suricata registra
+el tráfico y Wazuh recibe la alerta.”
+
+MOSTRAR alertas recientes desde PowerShell:
+  vagrant ssh siem -c "sudo grep -E '1000001|1000002' /var/ossec/logs/alerts/alerts.json | tail -n 5"
+
+MINUTO 3–4 — ATAQUE 2: FALLOS SSH FICTICIOS
+
+ACCION (PowerShell):
+  vagrant ssh attacker -c 'for i in 1 2 3 4 5; do ssh -o BatchMode=yes -o ConnectTimeout=3 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null soc_test_nonexistent@10.10.10.10 exit || true; done'
+
+MOSTRAR alerta en el SIEM:
+  vagrant ssh siem -c "sudo grep -E '100101|5710' /var/ossec/logs/alerts/alerts.json | tail -n 8"
+
+DECIR:
+“Hago cinco intentos con un usuario ficticio y autenticación por llave, sin
+probar contraseñas reales. El acceso se rechaza y la regla local 100101
+correlaciona los fallos SSH 5710 en la ventana configurada.”
+
+MINUTO 4–6 — ATAQUE 3: SQL INJECTION DE LABORATORIO
+
+ACCION (PowerShell):
+  vagrant ssh attacker -c 'curl -i --max-time 8 "http://10.10.10.10:3000/rest/products/search?q=%27%20OR%201=1--"'
+
+ESPERADO: HTTP 403 y cabecera `X-TiendaCR-WAF: blocked`.
+
+DECIR:
+“Envío un único payload de SQL injection al endpoint de prueba. El WAF
+rechaza el patrón con HTTP 403; Suricata lo detecta con SID 1000003 y Wazuh
+lo correlaciona con la regla 100100. No se extrajo información.”
+
+MOSTRAR alertas y Active Response:
+  vagrant ssh siem -c "sudo grep -E '100100|1000003' /var/ossec/logs/alerts/alerts.json | tail -n 8"
+  vagrant ssh target -c "sudo iptables -S INPUT | grep -E '10.10.10.30|3000'"
+
+DECIR:
+“La respuesta automática agrega un bloqueo temporal para la IP de Kali
+durante 180 segundos. Esto demuestra detección y contención; también puede
+afectar tráfico legítimo, por eso la regla está limitada al origen, destino,
+puerto y tiempo definidos.”
+
+MINUTO 6–8 — CORRELACION Y RESPUESTA
+
+ACCION: mostrar en Wazuh el agente 001, la regla de SQLi y la hora del
+evento. Mostrar también la regla INPUT temporal en target.
+
+COMANDOS DE APOYO:
+  vagrant ssh siem -c "sudo /var/ossec/bin/agent_control -lc"
+  vagrant ssh target -c "sudo tail -n 40 /var/log/suricata/fast.log"
+
+DECIR:
+“El Manager recibe alertas del agente y de Suricata. Aquí relaciono el
+evento del origen 10.10.10.30 con la firma y la respuesta automática. La
+regla se retira sola al vencer el timeout; no la elimino manualmente.”
+
+NOTA: el timeout real es de 180 segundos. Si aún no venció, no afirmar que
+el servicio ya recuperó acceso desde Kali. Puede usarse este tiempo para
+explicar las alertas y la matriz de riesgo residual.
+
+MINUTO 8–9 — COMPROBAR SERVICIO Y REMEDIACION
+
+ACCION (PowerShell):
+  vagrant ssh attacker -c "curl -sS --max-time 5 -o /dev/null -w 'HTTP=%{http_code}\n' http://10.10.10.10:3000/"
+
+Tras expirar el bloqueo, esperado para la página normal: HTTP 200. El mismo
+payload SQLi debe continuar en HTTP 403 por el WAF persistente. No repetirlo
+hasta que expire Active Response si el objetivo es mostrar el timeout completo.
+
+DECIR:
+“La comparación antes y después muestra que el payload probado ya no pasa:
+el WAF sigue devolviendo 403 cuando termina el bloqueo temporal, mientras
+la página normal devuelve 200. Este es un control compensatorio; Juice Shop
+sigue siendo intencionalmente vulnerable a variantes que no ensayamos.”
+
+MINUTO 9–10 — FIM Y CIERRE
+
+ACCION: mostrar el evento FIM 550 ya registrado. La llave temporal anterior
+fue revocada; no mostrar ni reutilizar llaves privadas.
+
+  vagrant ssh siem -c "sudo grep -E 'Integrity checksum changed|550' /var/ossec/logs/alerts/alerts.json | tail -n 5"
+
+DECIR:
+“También se probó la integridad desde Kali sobre un archivo inocuo del
+laboratorio. Wazuh emitió la alerta FIM 550 y la llave temporal se retiró
+al terminar. En conclusión, la arquitectura detecta los escenarios
+ensayados y responde de forma observable; el riesgo residual y los límites
+del WAF están documentados en el informe.”
+
+PREGUNTAS — RESPUESTAS CLAVE
+
+¿Qué hace el proveedor cloud en este laboratorio local?
+“AWS se usa como referencia para explicar responsabilidad compartida. En
+VirtualBox, el estudiante administra las VM, firewall, aplicación, llaves,
+reglas, monitoreo y evidencias.”
+
+¿Se parcheó Juice Shop?
+“No. Es deliberadamente vulnerable para el ejercicio. El WAF bloquea los
+patrones probados, pero no sustituye un parche ni cubre todas las variantes.”
+
+¿Qué demuestra Active Response?
+“Que la regla 100100 puede ordenar a Wazuh bloquear temporalmente la IP
+10.10.10.30 hacia el puerto 3000 del target y retirar la regla a los 180 s.”
+
+¿Qué limitación queda?
+“La aplicación subyacente sigue siendo vulnerable y el laboratorio es
+académico. El inventario de vulnerabilidades requiere priorización; las
+decisiones de entrega individual y coevaluación dependen del profesor.”
+
+AL TERMINAR
+
+Detener los túneles con Ctrl+C en cada ventana PowerShell. Apagar las VM:
+
+  vagrant halt
+
+Mantener el repositorio y las capturas sin contraseñas, tokens ni claves.

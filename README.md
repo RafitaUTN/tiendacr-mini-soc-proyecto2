@@ -19,6 +19,7 @@ tráfico a redes o sistemas externos.
 - Evidencia real sanitizada en [`evidence/2026-11-18`](evidence/2026-11-18/).
 - Informe final de 19 páginas: [`DOCX`](Informe%20tecnico/Informe%20de%20investigacion%20-%20Proyecto%202%20final.docx) y [`PDF`](Informe%20tecnico/Informe%20de%20investigacion%20-%20Proyecto%202%20final.pdf).
 - Guía de comandos para validar las VMs, abrir TiendaCR y Wazuh en el host por túneles SSH locales, y demostrar los ataques: [`COMPROBACION_EN_VIVO.txt`](COMPROBACION_EN_VIVO.txt).
+- Guion hablado de 10 minutos con acciones, comandos PowerShell y respuestas para las preguntas: [`GUION_PRESENTACION.txt`](GUION_PRESENTACION.txt).
 - Vulnerabilidades: consulta Indexer confirmó 629 paquetes y 2578 registros CVE asociados al agente 001; una muestra está bajo evaluación, así que su estado debe priorizarse en Dashboard.
 - Revalidación requisito por requisito, con resultados y pendientes: [`docs/VALIDACION_FINAL.md`](docs/VALIDACION_FINAL.md).
 - La verificación actual deja explícitos los límites: Juice Shop sigue siendo vulnerable a variantes no cubiertas por el WAF de firmas; se bloqueó el payload probado incluso después del timeout de Active Response. Consulte la matriz antes de la defensa.
