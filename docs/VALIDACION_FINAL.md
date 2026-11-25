@@ -1,4 +1,15 @@
-# Validación final contra el enunciado — 18 de noviembre de 2026
+# Validación final contra el enunciado — actualización 25 de noviembre de 2026
+
+El inventario de ataques y evidencias detallado abajo fue medido el 18 de
+noviembre. El 25 de noviembre se revalidaron desde el host el estado de las
+tres VM, servicios, agente, reglas Suricata, configuración Wazuh y acceso web
+local: Vagrant validó; las tres VM estaban `running`; el agente 001 estaba
+`Active`; Suricata cargó cuatro reglas sin errores; `wazuh-analysisd -t` y
+`filebeat test output` finalizaron correctamente; Juice Shop respondió HTTP 200.
+Además, el túnel local al Dashboard respondió HTTP 302 y el de Juice Shop HTTP
+200. El PDF final tiene 19 páginas.
+Las salidas resumidas de esta revalidación se guardan en
+[`../evidence/2026-11-25/E09-revalidacion-host.txt`](../evidence/2026-11-25/E09-revalidacion-host.txt).
 
 Alcance: comprobaciones realizadas desde el host y Kali dentro de la red privada
 Vagrant `tiendacr-lab` (`10.10.10.0/24`). No se escanearon redes externas ni se
@@ -36,7 +47,7 @@ un parche.
 | Respuesta automática | SQLi disparó 100100; Active Response insertó DROP en INPUT para `10.10.10.30`→`10.10.10.10:3000` por 180 s. Curl expiró; la regla se retiró sola. Después, el WAF siguió rechazando el mismo payload. | Cumple |
 | Remediación y repetición de ataques 2 y 3 | SSH por contraseña rechazado y 100101 activo. El mismo payload SQLi, repetido tras el timeout, obtuvo 403 persistente mientras HTTP normal obtuvo 200. | Cumple como control compensatorio del laboratorio; Juice Shop subyacente continúa vulnerable a variantes no probadas |
 | Plan IR de seis etapas, roles y objetivos de tiempo | Incluido en el informe: preparación, detección, contención, erradicación, recuperación y lecciones aprendidas. | Cumple documentalmente; la erradicación del código no se ejecutó |
-| Informe 15–20 páginas, PDF y repositorio | PDF del informe con 20 páginas; DOCX y PDF en repositorio público con historial limpio y evidencia filtrada. | Cumple |
+| Informe 15–20 páginas, PDF y repositorio | PDF del informe con 19 páginas; DOCX y PDF en repositorio público con historial limpio y evidencia filtrada. | Cumple |
 | Nombre del PDF según plantilla | Archivo público con nombre descriptivo; el enunciado pide `P1_Apellido1_Apellido2.pdf`. No se inventó un segundo apellido ni se cambió P2 por P1 sin aclaración del profesor. | Parcial; confirmar la convención para entrega individual |
 | Demostración 10 min + 5 min de preguntas | No puede acreditarse con pruebas de laboratorio. | Pendiente del estudiante |
 | Coevaluación y modalidad individual | No se inventaron integrante o formulario. El enunciado señala parejas; la aceptación del trabajo individual requiere confirmación del profesor. | Pendiente del curso |

@@ -17,7 +17,8 @@ tráfico a redes o sistemas externos.
 - Reglas personalizadas Suricata: SID 1000001–1000004. Reglas Wazuh:
   100100 (SQLi), 100101 (umbral de intentos SSH) y 100102 (traversal).
 - Evidencia real sanitizada en [`evidence/2026-11-18`](evidence/2026-11-18/).
-- Informe final de 20 páginas: [`DOCX`](Informe%20tecnico/Informe%20de%20investigacion%20-%20Proyecto%202%20final.docx) y [`PDF`](Informe%20tecnico/Informe%20de%20investigacion%20-%20Proyecto%202%20final.pdf).
+- Informe final de 19 páginas: [`DOCX`](Informe%20tecnico/Informe%20de%20investigacion%20-%20Proyecto%202%20final.docx) y [`PDF`](Informe%20tecnico/Informe%20de%20investigacion%20-%20Proyecto%202%20final.pdf).
+- Guía de comandos para validar las VMs, abrir TiendaCR y Wazuh en el host por túneles SSH locales, y demostrar los ataques: [`COMPROBACION_EN_VIVO.txt`](COMPROBACION_EN_VIVO.txt).
 - Vulnerabilidades: consulta Indexer confirmó 629 paquetes y 2578 registros CVE asociados al agente 001; una muestra está bajo evaluación, así que su estado debe priorizarse en Dashboard.
 - Revalidación requisito por requisito, con resultados y pendientes: [`docs/VALIDACION_FINAL.md`](docs/VALIDACION_FINAL.md).
 - La verificación actual deja explícitos los límites: Juice Shop sigue siendo vulnerable a variantes no cubiertas por el WAF de firmas; se bloqueó el payload probado incluso después del timeout de Active Response. Consulte la matriz antes de la defensa.

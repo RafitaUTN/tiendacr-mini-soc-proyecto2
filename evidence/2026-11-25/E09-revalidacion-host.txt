@@ -1,0 +1,44 @@
+Revalidacion final desde host — 25-11-2026
+Alcance: Vagrant y red privada tiendacr-lab; sin escaneo externo.
+
+Vagrant:
+- vagrant validate: Vagrantfile validated successfully.
+- vagrant status: attacker, target y siem running (VirtualBox).
+
+Kali attacker, 10.10.10.30:
+- /usr/bin/nmap, /usr/bin/hydra, /usr/bin/curl disponibles.
+- eth1 UP en 10.10.10.30/24.
+- Nmap limitado a 10.10.10.10 puertos TCP 22 y 3000: ambos open.
+- HTTP normal a http://10.10.10.10:3000/: HTTP 200.
+
+Target, 10.10.10.10:
+- systemctl: docker, suricata, wazuh-agent, tiendacr-docker-filter y
+  tiendacr-waf activos.
+- Contenedor tiendacr-juice-shop-nuevo Up; binding
+  127.0.0.1:3001->3000/tcp.
+- WAF en 10.10.10.10:3000; HTTP normal local: 200.
+- Suricata -T: cuatro reglas cargadas, cero fallidas.
+- UFW activo, incoming deny, routed deny. SSH en NAT solo de 10.0.2.2;
+  SSH y HTTP en la red privada solo desde 10.10.10.30.
+- sshd efectivo: PermitRootLogin no, PubkeyAuthentication yes,
+  PasswordAuthentication no.
+
+SIEM, 10.10.10.20:
+- wazuh-manager, wazuh-indexer, wazuh-dashboard y filebeat activos.
+- agent_control: agente 001 ubuntu-servidor-objetivo Active.
+- wazuh-analysisd -t: correcto.
+- filebeat test output: Elasticsearch https://127.0.0.1:9200, validacion
+  de certificado TLS, handshake y conexion correctos; version 7.10.2.
+- UFW activo, incoming deny, routed disabled. Agentes permitidos desde
+  10.10.10.10; Dashboard 443 desde 10.10.10.30 en red privada y 10.0.2.2
+  en NAT para administracion local.
+- sshd efectivo: PermitRootLogin no, PubkeyAuthentication yes,
+  PasswordAuthentication no.
+
+Acceso del host por tunel SSH local:
+- http://127.0.0.1:8300/ (forward a 10.10.10.10:3000): HTTP 200.
+- https://127.0.0.1:8443/ (forward a SIEM 127.0.0.1:443): HTTP 302,
+  redireccion esperada a autenticacion.
+- Los listeners de los tuneles estan ligados a 127.0.0.1 del host.
+
+No se guardan claves, contrasenas, tokens ni respuestas con datos privados.

@@ -56,6 +56,6 @@ ni registros completos de autenticación.
   trabajo en parejas; la aceptación de modalidad individual debe confirmarse
   con el profesor. No se inventan aportes ni coevaluación.
 - La demostración oral aún debe ser realizada por el estudiante. El informe
-  tiene 20 páginas y DOCX/PDF están en el repositorio público con historial
+  tiene 19 páginas y DOCX/PDF están en el repositorio público con historial
   limpio.
 - Revisión detallada contra cada punto del enunciado: `VALIDACION_FINAL.md`.

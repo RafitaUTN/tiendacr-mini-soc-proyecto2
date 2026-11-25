@@ -14,6 +14,11 @@ vagrant up target
 vagrant up attacker
 ```
 
+Para visualizar TiendaCR y el Dashboard en el navegador del host, usar los
+túneles SSH locales y comandos de demostración de
+[`../COMPROBACION_EN_VIVO.txt`](../COMPROBACION_EN_VIVO.txt). Los túneles
+escuchan solo en `127.0.0.1` del host y no publican los servicios a la LAN.
+
 ## 2. Verificar salud
 
 ```powershell

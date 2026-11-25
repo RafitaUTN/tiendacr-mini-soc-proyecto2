@@ -1,0 +1,188 @@
+PROYECTO 2 — GUÍA DE COMPROBACIÓN Y DEMOSTRACIÓN EN VIVO
+Mini SOC TiendaCR
+Actualizada: 25-11-2026
+
+Esta guía contiene comandos verificados para el laboratorio Vagrant local.
+Ejecutar los ataques únicamente contra 10.10.10.10 dentro de tiendacr-lab.
+No usar cuentas ni contraseñas reales. No escanear otras redes.
+
+ESTADO COMPROBADO EL 25-11-2026
+- vagrant validate: correcto; attacker, target y siem están running.
+- Kali 10.10.10.30: nmap, hydra y curl disponibles.
+- Target 10.10.10.10: Docker, Suricata, Wazuh Agent, filtro Docker y WAF
+  activos. Juice Shop está Up y solo publica 127.0.0.1:3001.
+- SIEM 10.10.10.20: Manager, Indexer, Dashboard y Filebeat activos;
+  agente 001 Active.
+- Suricata: 4 reglas cargadas y 0 fallidas.
+- Wazuh analysisd: prueba de configuración correcta.
+- Filebeat: TLS y conexión al Indexer correctos.
+- Desde el host, Juice Shop devolvió HTTP 200 por el túnel local y el
+  Dashboard devolvió HTTP 302 (redirige a autenticación).
+- PDF final: 19 páginas.
+
+1. PREPARAR LAS MÁQUINAS (PowerShell, desde la raíz del repositorio)
+
+  vagrant validate
+  vagrant status
+
+Si alguna está apagada, iniciar primero el SIEM, luego target y Kali:
+
+  vagrant up siem
+  vagrant up target
+  vagrant up attacker
+
+Comprobaciones rápidas:
+
+  vagrant ssh siem -c "sudo systemctl is-active wazuh-manager wazuh-indexer wazuh-dashboard filebeat"
+  vagrant ssh siem -c "sudo /var/ossec/bin/agent_control -lc"
+  vagrant ssh target -c "sudo systemctl is-active docker suricata wazuh-agent tiendacr-docker-filter tiendacr-waf"
+  vagrant ssh target -c "sudo docker ps --format '{{.Names}} {{.Status}} {{.Ports}}'"
+  vagrant ssh attacker -c "command -v nmap hydra curl; ip -4 -brief address"
+
+Esperado: los servicios indicados muestran active; el agente 001 muestra
+Active; Juice Shop muestra Up con 127.0.0.1:3001->3000/tcp.
+
+2. VER LA TIENDA Y EL PANEL EN EL NAVEGADOR DEL HOST
+
+Abrir DOS ventanas de PowerShell en la raíz del repositorio. Dejar cada
+comando ejecutándose en su propia ventana; no cerrarlas durante la demo.
+
+Ventana A — túnel SSH al WAF/TiendaCR:
+
+  vagrant ssh target -- -N -L 127.0.0.1:8300:10.10.10.10:3000
+
+En el navegador del host abrir:
+
+  http://127.0.0.1:8300/
+
+La tienda debe cargar. Para comprobar desde otra ventana PowerShell:
+
+  curl.exe --max-time 5 -sS -o NUL -w "JUICESHOP_HTTP=%{http_code}`n" http://127.0.0.1:8300/
+
+Ventana B — túnel SSH al Dashboard Wazuh:
+
+  vagrant ssh siem -- -N -L 127.0.0.1:8443:127.0.0.1:443
+
+En el navegador del host abrir:
+
+  https://127.0.0.1:8443/
+
+El certificado es del laboratorio y puede producir una advertencia del
+navegador. HTTP 302 es esperado: lleva a la pantalla de inicio de sesión.
+Usar las credenciales locales del Dashboard; no guardarlas en este archivo
+ni en Git.
+
+Para cerrar un túnel: volver a su ventana y presionar Ctrl+C. Los túneles
+escuchan solo en 127.0.0.1 del host; no se publica el puerto a la LAN ni a
+Internet y no se cambia el firewall de las VM.
+
+3. EJECUTAR ATAQUES CONTROLADOS DESDE KALI
+
+Entrar a una terminal Kali desde PowerShell:
+
+  vagrant ssh attacker
+
+Los comandos siguientes se ejecutan dentro de Kali.
+
+Ataque 1 — reconocimiento limitado a los dos puertos del objetivo:
+
+  nmap -Pn -sT -sV -p 22,3000 --version-light 10.10.10.10
+
+Demostrar: puertos/servicios; SID Suricata 1000001/1000002; el evento en
+Wazuh/SIEM. No escanear rangos ni puertos adicionales durante la demo.
+
+Ataque 2 — varios fallos SSH ficticios (dispara la regla 100101):
+
+  for i in 1 2 3 4 5; do ssh -o BatchMode=yes -o ConnectTimeout=3 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null soc_test_nonexistent@10.10.10.10 exit || true; done
+
+Demostrar: rechazo por llave pública, regla SSH 5710 y regla local 100101.
+El usuario es ficticio; no se intenta una contraseña real. SSH por
+contraseña permanece deshabilitado.
+
+Ataque 3a — SQLi inocua de prueba al endpoint de Juice Shop:
+
+  curl -i --max-time 8 'http://10.10.10.10:3000/rest/products/search?q=%27%20OR%201=1--'
+
+Esperado: HTTP 403 y cabecera X-TiendaCR-WAF: blocked. Mostrar Suricata
+SID 1000003, Wazuh 100100 y la regla temporal de Active Response en target:
+
+  exit
+  vagrant ssh target -c "sudo iptables -S INPUT | grep -E '10.10.10.30|3000'"
+
+Active Response bloquea temporalmente el origen Kali durante 180 segundos.
+No quitar la regla a mano. Durante el timeout, mostrar el Dashboard y los
+registros. Tras el vencimiento, repetir desde Kali la solicitud SQLi: el WAF
+debe seguir devolviendo 403. La página normal debe responder HTTP 200:
+
+  vagrant ssh attacker -c "curl -sS --max-time 5 -o /dev/null -w 'HTTP=%{http_code}\n' http://10.10.10.10:3000/"
+
+Ataque 3b — traversal codificado (hacerlo al final porque puede activar
+controles de respuesta):
+
+  curl -i --path-as-is --max-time 8 'http://10.10.10.10:3000/..%2f..%2fetc%2fpasswd'
+
+Esperado: HTTP 403, Suricata SID 1000004 y Wazuh 100102. No se debe recibir
+ni mostrar /etc/passwd; el objetivo es observar el bloqueo y la alerta.
+
+4. ATAQUE 4 — INTEGRIDAD DE ARCHIVOS (OPCIONAL PARA REPETIR EN VIVO)
+
+La demostración anterior desde Kali ya generó Wazuh 550 y revocó la llave
+temporal. Para volver a realizarla, generar una nueva llave temporal en Kali,
+autorizar SOLO su llave pública en target y quitarla al terminar.
+
+Dentro de Kali:
+
+  ssh-keygen -t ed25519 -f /tmp/fim-demo -N "" -C fim-demo-temporal
+  cat /tmp/fim-demo.pub
+
+Copiar la línea pública mostrada. En PowerShell del host, asignarla a $pub
+(sin comillas angulares) y autorizarla temporalmente:
+
+  $pub = 'PEGAR_AQUI_LA_LINEA_PUBLICA_COMPLETA'
+  vagrant ssh target -c "printf '%s\n' '$pub' | sudo tee -a /home/vagrant/.ssh/authorized_keys >/dev/null; sudo chown vagrant:vagrant /home/vagrant/.ssh/authorized_keys; sudo chmod 600 /home/vagrant/.ssh/authorized_keys"
+
+De nuevo dentro de Kali, cambiar solo el archivo de prueba:
+
+  ssh -i /tmp/fim-demo -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null vagrant@10.10.10.10 'echo demo-FIM-live >> /opt/tiendacr/fim-test/project-check.txt'
+
+Esperar el siguiente ciclo FIM (puede tardar alrededor de un minuto) y
+mostrar en el SIEM la regla 550. Al terminar, quitar la llave y borrarla:
+
+  vagrant ssh target -c "sudo sed -i '/fim-demo-temporal$/d' /home/vagrant/.ssh/authorized_keys"
+  vagrant ssh attacker -c "rm -f /tmp/fim-demo /tmp/fim-demo.pub"
+
+No dejar esa llave autorizada ni reutilizar la clave privada.
+
+5. MOSTRAR ALERTAS EN EL SIEM
+
+Desde PowerShell en el host:
+
+  vagrant ssh siem -c "sudo grep -E '100100|100101|100102|550' /var/ossec/logs/alerts/alerts.json | tail -n 20"
+  vagrant ssh target -c "sudo grep -E '1000001|1000002|1000003|1000004' /var/log/suricata/fast.log | tail -n 20"
+
+En https://127.0.0.1:8443/ mostrar el agente 001 y los eventos recientes.
+Explicar que las alertas 100100/100102 son reglas propias Wazuh y los SID
+1000001–1000004 son reglas propias Suricata.
+
+6. GUION SUGERIDO PARA LOS 10 MINUTOS
+
+Min 0–1: explicar la red aislada, las tres VM y las IP.
+Min 1–2: abrir Juice Shop en el host y el Dashboard con los túneles locales.
+Min 2–3: Nmap desde Kali; correlacionar los SIDs 1000001/1000002.
+Min 3–4: cinco fallos SSH ficticios; mostrar la regla 100101.
+Min 4–6: SQLi; mostrar HTTP 403, Wazuh 100100 y bloqueo Active Response.
+Min 6–8: mostrar panel y registros durante el timeout; explicar que dura 180 s.
+Min 8–9: mostrar HTTP 200 normal y el FIM 550 registrado (o traversal 403).
+Min 9–10: explicar controles, riesgo residual y límites del WAF.
+
+La expiración real toma 180 segundos; no se debe afirmar que venció sin
+comprobarlo. El WAF cubre los patrones ensayados, pero Juice Shop sigue siendo
+intencionalmente vulnerable a variantes no probadas.
+
+7. APAGAR EL LABORATORIO AL TERMINAR
+
+  vagrant halt
+
+Los pendientes académicos que no puede cerrar una prueba técnica son la
+defensa oral, el formulario del curso y confirmar con el profesor la modalidad
+individual y el nombre de archivo exigido por el enunciado.
